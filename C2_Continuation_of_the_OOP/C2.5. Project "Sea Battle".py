@@ -41,10 +41,14 @@
 # 10. В случае, если возникают непредвиденные ситуации, выбрасывать и обрабатывать исключения.
 #     Буквой X помечаются подбитые корабли, буквой T — промахи.
 # 11. Побеждает тот, кто быстрее всех разгромит корабли противника.
+class BoardOutException(Exception):
+    pass
 
 
 class Field:
     field = [[' ' for i in range(7)] for j in range(7)]
+    ship_list = []
+    live_ship_list = []
 
     def __init__(self, hid):
         self.hid = hid
@@ -59,22 +63,59 @@ class Field:
                 else:
                     print(f" {self.field[i][j]} ", end="|")
             print()
+        if not self.hid:
+            for ship in self.ship_list:
+                for dot in ship:
+                    self.field[dot[0]][dot[1]] = '■'
 
-    def add_ship(self, ship_dots):
-        for dot in ship_dots:
-            self.field[dot[0]][dot[1]] = '■'
+    def add_ship(self, ship):
+        self.ship_list.append(ship)
+        self.live_ship_list.append(ship)
+        if not self.hid:
+            for dot in ship:
+                self.field[dot[0]][dot[1]] = '■'
 
     def shot(self, x, y):
         self.field[x][y] = "*"
 
+    def contour(self):
+        cont = set()
+        for ship in self.ship_list:
+            print(ship)
+        for ship in self.ship_list:
+            for dot in ship:
+                y_pos = (dot[0], dot[1] + 1)
+                x_pos = (dot[0] + 1, dot[1])
+                y_neg = (dot[0], dot[1] - 1)
+                x_neg = (dot[0] - 1, dot[1])
+                xy_pos = (dot[0] + 1, dot[1] + 1)
+                xy_neg = (dot[0] - 1, dot[1] - 1)
+                x_pos_y_neg = (dot[0] + 1, dot[1] - 1)
+                x_neg_y_pos = (dot[0] - 1, dot[1] + 1)
+                if y_pos not in ship:
+                    cont.add(y_pos)
+                if x_pos not in ship:
+                    cont.add(x_pos)
+                if y_neg not in ship:
+                    cont.add(y_neg)
+                if x_neg not in ship:
+                    cont.add(x_neg)
+                if xy_pos not in ship:
+                    cont.add(xy_pos)
+                if xy_neg not in ship:
+                    cont.add(xy_neg)
+                if x_pos_y_neg not in ship:
+                    cont.add(x_pos_y_neg)
+                if x_neg_y_pos not in ship:
+                    cont.add(x_neg_y_pos)
 
-my_field = Field(True)
-my_field.show()
-print()
-my_field.shot(2, 2)
-my_field.show()
+        print(cont)
 
-print()
+    def out(self, x, y):
+        if x > 6 or y > 6:
+            return True
+        else:
+            return False
 
 
 class Ship:
@@ -93,15 +134,6 @@ class Ship:
         return ship_points
 
 
-ship1 = Ship(4, 1, 1, False, 4)
-print(ship1.dots())
-for dot in ship1.dots():
-    print(f"x={dot[0]}, y={dot[1]}")
-
-my_field.add_ship(ship1.dots())
-my_field.show()
-
-
 class Dot:
     def __init__(self, x, y):
         self.x = x
@@ -114,3 +146,16 @@ class Dot:
 class Player:
     pass
 
+
+my_field = Field(False)
+dot1 = Dot(1, 1)
+
+ship1 = Ship(3, 1, 3, False, 3)
+# ship2 = Ship(2, 6, 1, True, 2)
+
+my_field.add_ship(ship1.dots())
+# my_field.add_ship(ship2.dots())
+
+my_field.show()
+print(my_field.out(dot1.x, dot1.y))
+my_field.contour()
