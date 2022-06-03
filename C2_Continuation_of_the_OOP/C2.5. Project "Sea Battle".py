@@ -41,19 +41,52 @@
 # 10. В случае, если возникают непредвиденные ситуации, выбрасывать и обрабатывать исключения.
 #     Буквой X помечаются подбитые корабли, буквой T — промахи.
 # 11. Побеждает тот, кто быстрее всех разгромит корабли противника.
-class BoardOutException(Exception):
-    pass
+
+# class BoardOutException(Exception):
+#     print("Вы пытаетесь выстрелить за пределы поля!")
+#     print("Координаты вводятся от 1 до 6")
+
+
+class Dot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+
+class Ship:
+    def __init__(self, ship_len, bow_x, bow_y, horizontally, hit_point):
+        self.ship_len = ship_len
+        self.bow_x = bow_x
+        self.bow_y = bow_y
+        self.ship_direction = horizontally
+        self.hit_point = hit_point
+
+    def dots(self):
+        if self.ship_direction:
+            ship_points = [(self.bow_x, self.bow_y+i) for i in range(self.ship_len)]
+        else:
+            ship_points = [(self.bow_x+i, self.bow_y) for i in range(self.ship_len)]
+        return ship_points
 
 
 class Field:
-    field = [[' ' for i in range(7)] for j in range(7)]
-    ship_list = []
-    live_ship_list = []
-
     def __init__(self, hid):
         self.hid = hid
+        self.field = [[' ' for i in range(7)] for j in range(7)]
+        self.ship_list = []
+        self.live_ship_list = []
 
     def show(self):
+        if not self.hid:
+            print("--------Поле игрока--------")
+            for ship in self.ship_list:
+                for dot in ship:
+                    self.field[dot[0]][dot[1]] = '■'
+        else:
+            print("------Поле компьютера------")
         for i in range(7):
             for j in range(7):
                 if i == 0:
@@ -63,20 +96,17 @@ class Field:
                 else:
                     print(f" {self.field[i][j]} ", end="|")
             print()
-        if not self.hid:
-            for ship in self.ship_list:
-                for dot in ship:
-                    self.field[dot[0]][dot[1]] = '■'
+        print("---------------------------")
 
     def add_ship(self, ship):
         self.ship_list.append(ship)
         self.live_ship_list.append(ship)
-        if not self.hid:
-            for dot in ship:
-                self.field[dot[0]][dot[1]] = '■'
 
     def shot(self, x, y):
-        self.field[x][y] = "*"
+        if 1 <= x <= 6 and 1 <= y <= 6:
+            self.field[x][y] = "*"
+        # else:
+        #     raise BoardOutException
 
     def contour(self):
         cont = set()
@@ -109,8 +139,6 @@ class Field:
                 if x_neg_y_pos not in ship:
                     cont.add(x_neg_y_pos)
 
-        print(cont)
-
     def out(self, x, y):
         if x > 6 or y > 6:
             return True
@@ -118,44 +146,37 @@ class Field:
             return False
 
 
-class Ship:
-    def __init__(self, ship_len, bow_x, bow_y, horizontally, hit_point):
-        self.ship_len = ship_len
-        self.bow_x = bow_x
-        self.bow_y = bow_y
-        self.ship_direction = horizontally
-        self.hit_point = hit_point
-
-    def dots(self):
-        if self.ship_direction:
-            ship_points = [(self.bow_x, self.bow_y+i) for i in range(self.ship_len)]
-        else:
-            ship_points = [(self.bow_x+i, self.bow_y) for i in range(self.ship_len)]
-        return ship_points
-
-
-class Dot:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
-
-
 class Player:
-    pass
+    def __init__(self):
+        self.my_field = Field(False)
+        self.enemy_field = Field(True)
+
+    def ask(self):
+        pass
+
+    def move(self):
+        self.ask()
+        Field.shot()
 
 
-my_field = Field(False)
-dot1 = Dot(1, 1)
+class User(Player):
+    def ask(self):
+        x = int(input('Enter x: '))
+        y = int(input('Enter y: '))
+        user_shot = Dot(x, y)
+        return user_shot
+
+
+alex = User()
+alex.ask()
 
 ship1 = Ship(3, 1, 3, False, 3)
-# ship2 = Ship(2, 6, 1, True, 2)
+ship2 = Ship(2, 6, 1, True, 2)
+pl1 = Player()
 
-my_field.add_ship(ship1.dots())
-# my_field.add_ship(ship2.dots())
+pl1.my_field.add_ship(ship1.dots())
+pl1.my_field.show()
 
-my_field.show()
-print(my_field.out(dot1.x, dot1.y))
-my_field.contour()
+
+pl1.enemy_field.add_ship(ship2.dots())
+pl1.enemy_field.show()
