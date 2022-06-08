@@ -1,3 +1,7 @@
+import random
+import time
+
+
 class BoardException(Exception):
     pass
 
@@ -9,7 +13,7 @@ class OutBoardException(BoardException):
 
 class RepeatBoardException(BoardException):
     def __str__(self):
-        return "Вы стреляете в клетку, которая уже занята!"
+        return "Вы стреляете в клетку, в которую уже стреляли!"
 
 
 class UnableToAddShipBoardException(BoardException):
@@ -50,10 +54,12 @@ class Board:
     def __init__(self, hid=False):
         self.hid = hid
         self.ships = []
+        self.sunk_ships = 0
         self.busy = []
         self.board = [[' '] * 7 for i in range(7)]
+        self.shot_list = []
 
-    def show_board(self):
+    def show(self):
         if self.hid:
             print("------Поле компьютера------")
             for i in range(7):
@@ -90,11 +96,11 @@ class Board:
         ]
         for dot in ship.dots:
             for dx, dy in near:
-                cur = Dot(dot.x+dx, dot.y+dy)
+                cur = Dot(dot.x + dx, dot.y + dy)
                 if not self.out(cur) and cur not in self.busy:
-                    if display:
-                        self.board[cur.x][cur.y] = '*'
                     self.busy.append(cur)
+                if display and cur not in ship.dots:
+                    self.board[cur.x][cur.y] = '*'
 
     def add_ship(self, ship):
         for dot in ship.dots:
@@ -109,46 +115,133 @@ class Board:
     def shot(self, dot):
         if self.out(dot):
             raise OutBoardException
+        elif dot in self.shot_list:
+            raise RepeatBoardException
         elif dot in self.busy:
             for ship in self.ships:
                 if dot in ship.dots:
                     print("Попадание!")
                     self.board[dot.x][dot.y] = 'X'
                     ship.hp -= 1
-                    if ship.hp == 0:
+                    self.shot_list.append(dot)
+                    if not ship.hp:
                         self.contour(ship, display=True)
+                        self.sunk_ships += 1
                         print("Корабль уничтожен!")
+                        return True
+                    return True
                 else:
-                    raise RepeatBoardException
+                    print("Мимо!")
+                    self.board[dot.x][dot.y] = '*'
+                    self.busy.append(dot)
+                    self.shot_list.append(dot)
+                    return False
         else:
             print("Мимо!")
             self.board[dot.x][dot.y] = '*'
             self.busy.append(dot)
+            self.shot_list.append(dot)
+            return False
 
 
-bow_ = Dot(1, 2)
-ship = Ship(bow_, 2, True)
-print(ship.dots)
+class Player:
+    def __init__(self):
+        self.board = Board()
+        self.enemy_board = Board(hid=True)
+
+    def ask(self):
+        pass
+
+    def move(self):
+        while True:
+            try:
+                # self.enemy_board.shot(self.ask())
+                if self.enemy_board.shot(self.ask()):
+                    self.board.show()
+                    self.enemy_board.show()
+                    return True
+                else:
+                    self.board.show()
+                    self.enemy_board.show()
+                    return False
+            except BoardException as e:
+                print(e)
+                print("Пожалуйста, в7"
+                      "Введите координаты заново!")
+                continue
 
 
-dot = Dot(1, 2)
-dot2 = Dot(1, 3)
+class User(Player):
+    def ask(self):
+        while True:
+            try:
+                x = int(input("enter x: "))
+                y = int(input("enter y: "))
+            except ValueError:
+                print("Вводятся только цифры")
+                continue
+            else:
+                return Dot(x, y)
+
+
+class Ai(Player):
+    def ask(self):
+        x = random.randint(1, 6)
+        y = random.randint(1, 6)
+        return Dot(x, y)
+
+
+ai_ship2 = Ship(Dot(1, 1), 2, horizontally=False)
+us_ship2 = Ship(Dot(3, 3), 2, horizontally=True)
+
 user_board = Board()
-print(user_board.out(dot))
-user_board.show_board()
-ai_board = Board(True)
-ai_board.show_board()
-ai_board.add_ship(ship)
-ai_board.show_board()
+user_board.add_ship(us_ship2)
 
-print("busy:", ai_board.busy)
+ai_board = Board(hid=True)
+ai_board.add_ship(ai_ship2)
 
-user_board.add_ship(ship)
+user = User()
+ai = Ai()
 
-user_board.shot(dot)
-user_board.shot(dot2)
-user_board.show_board()
+user.board = user_board
+user.enemy_board = ai_board
 
-print(user_board.busy)
+ai.board = ai_board
+ai.enemy_board = user_board
 
-user_board.show_board()
+user_board.show()
+ai_board.show()
+win = False
+while not win:
+    if user.move():
+        while True:
+            if len(user.board.ships) == user.board.sunk_ships:
+                print(f"Победил компьютер!")
+                win = True
+                break
+            elif len(ai.board.ships) == ai.board.sunk_ships:
+                print(f"Победил пользователь!")
+                win = True
+                break
+
+            if user.move():
+                continue
+            else:
+                break
+    if not win:
+        time.sleep(3)
+        if ai.move():
+            while True:
+                if len(user.board.ships) == user.board.sunk_ships:
+                    print(f"Победил компьютер!")
+                    win = True
+                    break
+                elif len(ai.board.ships) == ai.board.sunk_ships:
+                    print(f"Победил пользователь!")
+                    win = True
+                    break
+
+                if ai.move():
+                    continue
+                else:
+                    break
