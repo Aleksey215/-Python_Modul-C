@@ -228,50 +228,6 @@ class Game:
         print("<<<  у - номер столбца  >>>")
         print()
 
-    # def play(self):
-    #     print()
-    #     win = False
-    #     while not win:
-    #         print()
-    #         self.user.board.show()
-    #         self.ai.board.show()
-    #         print("-----Ход пользователя------")
-    #         if self.user.move():
-    #             while True:
-    #                 if len(self.user.board.ships) == self.user.board.sunk_ships:
-    #                     print(f"Победил компьютер!")
-    #                     win = True
-    #                     break
-    #                 elif len(self.ai.board.ships) == self.ai.board.sunk_ships:
-    #                     print(f"Победил пользователь!")
-    #                     win = True
-    #                     break
-    #
-    #                 if self.user.move():
-    #                     continue
-    #                 else:
-    #                     break
-    #
-    #         if not win:
-    #             print()
-    #             print("----------Ход ИИ-----------")
-    #             time.sleep(3)
-    #             if self.ai.move():
-    #                 while True:
-    #                     if len(self.user.board.ships) == self.user.board.sunk_ships:
-    #                         print(f"Победил компьютер!")
-    #                         win = True
-    #                         break
-    #                     elif len(self.ai.board.ships) == self.ai.board.sunk_ships:
-    #                         print(f"Победил пользователь!")
-    #                         win = True
-    #                         break
-    #
-    #                     if self.ai.move():
-    #                         continue
-    #                     else:
-    #                         break
-
     def play(self):
         win = False
         move_num = 0
