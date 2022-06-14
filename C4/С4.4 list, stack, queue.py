@@ -226,47 +226,55 @@ class Queue:
             return self.tail - self.head
 
     def add(self):
-        pass
+        self.task_num += 1
+        self.tasks[self.tail] = self.task_num
+        print(f"Задача №{self.tasks[self.tail]} добавлена")
+        self.tail = (self.tail + 1) % self.max_size
 
+    def show(self):  # выводим приоритетную задачу
+        print(f"Задача №{self.tasks[self.head]} в приоритете")
 
-
+    def do(self):  # выполняем приоритетную задачу
+        print(f"Задача №{self.tasks[self.head]} выполнена")
+        # после выполнения зануляем элемент по указателю
+        self.tasks[self.head] = 0
+        # и циклично перемещаем указатель
+        self.head = (self.head + 1) % self.max_size
 
 
 # Используем класс
-# size = int(input("Определите размер очереди: "))
-q = Queue(3)
-print(q.tasks)
-print(q.size())
-print(q.is_empty())
-#
-# while True:
-#     cmd = input("Введите команду:")
-#     if cmd == "empty":
-#         if q.is_empty():
-#             print("Очередь пустая")
-#         else:
-#             print("В очереди есть задачи")
-#     elif cmd == "size":
-#         print("Количество задач в очереди:", q.size())
-#     elif cmd == "add":
-#         if q.size() != q.max_size:
-#             q.add()
-#         else:
-#             print("Очередь переполнена")
-#     elif cmd == "show":
-#         if q.is_empty():
-#             print("Очередь пустая")
-#         else:
-#             q.show()
-#     elif cmd == "do":
-#         if q.is_empty():
-#             print("Очередь пустая")
-#         else:
-#             q.do()
-#     elif cmd == "exit":
-#         for _ in range(q.size()):
-#             q.do()
-#         print("Очередь пустая. Завершение работы")
-#         break
-#     else:
-#         print("Введена неверная команда")
+size = int(input("Определите размер очереди: "))
+q = Queue(size)
+
+while True:
+    cmd = input("Введите команду:")
+    if cmd == "empty":
+        if q.is_empty():
+            print("Очередь пустая")
+        else:
+            print("В очереди есть задачи")
+    elif cmd == "size":
+        print("Количество задач в очереди:", q.size())
+    elif cmd == "add":
+        if q.size() != q.max_size:
+            q.add()
+        else:
+            print("Очередь переполнена")
+    elif cmd == "show":
+        if q.is_empty():
+            print("Очередь пустая")
+        else:
+            q.show()
+    elif cmd == "do":
+        if q.is_empty():
+            print("Очередь пустая")
+        else:
+            q.do()
+    elif cmd == "exit":
+        for _ in range(q.size()):
+            q.do()
+        print("Очередь пустая. Завершение работы")
+        break
+    else:
+        print("Введена неверная команда")
+
