@@ -1,4 +1,4 @@
-# C3.3. Работа с импортом
+# C3_Modules and imports, files and data.3. Работа с импортом
 # Импорт происходит с помощью зарезервированного слова import название модуля.
 import os
 import sys
