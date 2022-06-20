@@ -131,9 +131,9 @@ class BinarySearchTree:
     def search(self, x):  # 1. Поиск элемента
         if self.value == x:
             return self
-        elif self.value > x:
-            return self.left_child.search(x)
         elif self.value < x:
+            return self.left_child.search(x)
+        elif self.value > x:
             return self.right_child.search(x)
         else:
             return False
